@@ -1,0 +1,42 @@
+{
+  "description": "GraphQL Constraints",
+  "scripts": {
+    "tsc": "tsc",
+    "build:bundle": "webpack -p --config webpack.config.js",
+    "build": "rimraf lib/ && npm run tsc && npm run build:bundle",
+    "start": "npm run tsc && ts-node ./lib/index.js"
+  },
+  "dependencies": {
+    "graphql": "github:apis-guru/graphql-js#astNode-fork-dist",
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "@types/graphql": "^0.9.0",
+    "@types/lodash": "^4.14.65",
+    "@types/webpack": "^2.2.15",
+    "awesome-typescript-loader": "^3.1.2",
+    "rimraf": "^2.6.1",
+    "typescript": "^2.2.2",
+    "webpack": "^2.4.1"
+  },
+  "name": "graphql-constraints",
+  "version": "0.0.1",
+  "main": "lib/graphql-constraints.bundle.js",
+  "module": "lib/index.js",
+  "jsnext:main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/APIs-guru/graphql-constraints.git"
+  },
+  "keywords": [
+    "GraphQL",
+    "validation"
+  ],
+  "author": "APIs.guru <founders@apis.guru>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/APIs-guru/graphql-constraints/issues"
+  },
+  "homepage": "https://github.com/APIs-guru/graphql-constraints#readme"
+}
