@@ -104,20 +104,33 @@ function typeOf(value: any): string {
 }
 
 function validate(value: any, directives:ConstraintsMap): void {
-  switch (typeOf(value)) {
-    case 'Null':
-      return;
-    case 'String':
-      return stringValue(value, directives['@stringValue']);
-    case 'Number':
-      return numberValue(value, directives['@numberValue']);
-    case 'Boolean':
-      return booleanValue(value, directives['@booleanValue']);
-    case 'Array':
-      //while () {
-      //}
-      return value.forEach((item:any) => validate(item, directives));
-    // case 'Object':
+  if (value === null && Object.keys(directives).length === 0)
+    return;
+
+  const valueType = typeOf(value);
+  if (valueType === 'Array') {
+    //while () {
+    //}
+    return value.forEach(item => validate(item, directives));
+  }
+  else if(valueType === 'Object') {
+  }
+  else {
+    const expectedDirective = `@${valueType}Value`;
+    const validateFn = {
+      String: stringValue,
+      Number: numberValue,
+      Boolean: booleanValue,
+    } [valueType];
+
+    const directiveNames = Object.keys(directives);
+    if (!directiveNames.includes(expectedDirective)) {
+      const allowedTypes = directiveNames.map(
+        name => /@(.+)Value/.exec(name)[1]
+      );
+      throw Error(`Got ${valueType} expected ${allowedTypes.join(',')}`)
+    }
+    return validateFn(value, directives[expectedDirective]);
   }
 }
 
