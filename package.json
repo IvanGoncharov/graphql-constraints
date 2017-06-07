@@ -4,7 +4,7 @@
     "tsc": "tsc",
     "build:bundle": "webpack -p --config webpack.config.js",
     "build": "rimraf lib/ && npm run tsc && npm run build:bundle",
-    "start": "npm run tsc && ts-node ./lib/index.js"
+    "start": "npm run tsc && node ./lib/index.js"
   },
   "dependencies": {
     "graphql": "github:apis-guru/graphql-js#astNode-fork-dist",
