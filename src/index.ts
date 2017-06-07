@@ -100,7 +100,7 @@ function typeOf(value: any): string {
   // handle objects created with Object.create(null)
   if (!type && (typeof value === 'object'))
     type = 'Object';
-  return type;
+  return type.toLowerCase();
 }
 
 function validate(value: any, directives:ConstraintsMap): void {
@@ -118,9 +118,9 @@ function validate(value: any, directives:ConstraintsMap): void {
   else {
     const expectedDirective = `@${valueType}Value`;
     const validateFn = {
-      String: stringValue,
-      Number: numberValue,
-      Boolean: booleanValue,
+      string: stringValue,
+      number: numberValue,
+      boolean: booleanValue,
     } [valueType];
 
     const directiveNames = Object.keys(directives);
