@@ -51,8 +51,8 @@ interface ConstraintsMap {
 
 export const constraintsIDL = new Source(`
 directive @numberValue(
-  min: Int
-  max: Int
+  min: Float
+  max: Float
 ) on FIELD | QUERY
 
 directive @stringValue(
