@@ -8,15 +8,46 @@ import {
   GraphQLSchema,
   GraphQLScalarType,
   GraphQLObjectType,
+  DirectiveNode,
   ScalarTypeDefinitionNode,
   InputValueDefinitionNode,
 } from 'graphql';
 
 import { getArgumentValues } from 'graphql/execution/values.js';
 
-import * as each from 'lodash/each.js';
-import * as keyBy from 'lodash/keyBy.js';
-import * as mapValues from 'lodash/mapValues.js';
+import { each, keyBy, mapValues } from 'lodash';
+
+
+type Dictionary<T> = {[key: string]: T};
+
+interface ASTNodeWithDirectives {
+  directives?: DirectiveNode[];
+}
+
+type Constraints =
+  | StringConstraints
+  | NumberConstraints
+  | BooleanConstraints;
+
+interface StringConstraints {
+  minLength: number;
+  maxLength: number;
+}
+
+interface NumberConstraints {
+  min: number;
+  max: number;
+}
+
+interface BooleanConstraints {
+  equals: boolean;
+}
+
+interface ConstraintsMap {
+  '@stringValue'?: StringConstraints;
+  '@numberValue'?: NumberConstraints;
+  '@booleanValue'?: BooleanConstraints;
+}
 
 export const constraintsIDL = new Source(`
 directive @numberValue(
@@ -32,7 +63,7 @@ directive @stringValue(
 
 const constraintsDirectives = getDirectivesFromAST(constraintsIDL);
 
-function getDirectivesFromAST(idl) {
+function getDirectivesFromAST(idl:Source) {
   const dummyIDL = `
     type Query {
       dummy: String
@@ -49,14 +80,14 @@ function getDirectivesFromAST(idl) {
   return directives;
 }
 
-function getConstrainDirectives(astNode) {
+function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
   if (astNode === null)
     return {};
-  var result = {};
+  let result:Dictionary<Constraints> = {};
   astNode.directives.forEach(directiveNode => {
     const name = directiveNode.name.value;
     const directive = constraintsDirectives[name];
-    result['@' + name] = getArgumentValues(directive, directiveNode);
+    result['@' + name] = getArgumentValues(directive, directiveNode) as Constraints;
   });
   return result;
 }
@@ -72,7 +103,7 @@ function typeOf(value: any): string {
   return type;
 }
 
-function validate(value: any, directives): void {
+function validate(value: any, directives:ConstraintsMap): void {
   switch (typeOf(value)) {
     case 'Null':
       return;
@@ -85,26 +116,26 @@ function validate(value: any, directives): void {
     case 'Array':
       //while () {
       //}
-      return value.forEach(item => validate(item, directives));
+      return value.forEach((item:any) => validate(item, directives));
     // case 'Object':
   }
 }
 
-function stringValue(str, constraints) {
+function stringValue(str:string, constraints: StringConstraints) {
   if (constraints.minLength && str.length < constraints.minLength)
     throw Error('less than minLength');
   if (constraints.maxLength && str.length > constraints.maxLength)
     throw Error('less than maxLength');
 }
 
-function numberValue(num, constraints) {
+function numberValue(num:number, constraints: NumberConstraints) {
   if (constraints.min && num < constraints.min)
     throw Error('less than min');
   if (constraints.max && num > constraints.max)
     throw Error('less than max');
 }
 
-function booleanValue(value, constraints) {
+function booleanValue(value:boolean, constraints: BooleanConstraints) {
   if (constraints.equals && value !== constraints.equals)
     throw Error('not equals');
 }
@@ -116,13 +147,13 @@ function constraintsMiddleware(schema: GraphQLSchema):void {
 
     if (type instanceof GraphQLScalarType) {
       const astNode = (type as any).astNode as ScalarTypeDefinitionNode;
-      getConstrainDirectives(astNode);
+      extractConstraints(astNode);
     }
     if (type instanceof GraphQLObjectType) {
       each(type.getFields(), field => {
         const argsConstraints = mapValues(keyBy(field.args, 'name'), arg => {
           const astNode = (arg as any).astNode as InputValueDefinitionNode;
-          return getConstrainDirectives(astNode);
+          return extractConstraints(astNode);
         });
         console.log(argsConstraints);
 
