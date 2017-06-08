@@ -84,11 +84,11 @@ function getDirectivesFromAST(idl:Source) {
 function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
   if (astNode === null)
     return {};
-  let result:Dictionary<Constraints[]> = {};
+  let result = {};
   astNode.directives.forEach(directiveNode => {
     const name = directiveNode.name.value;
     const directive = constraintsDirectives[name];
-    result['@' + name] = [getArgumentValues(directive, directiveNode) as Constraints];
+    result['@' + name] = [getArgumentValues(directive, directiveNode)];
   });
   return result;
 }
