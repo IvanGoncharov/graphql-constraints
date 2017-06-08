@@ -6,6 +6,7 @@ import {
   buildSchema,
   buildASTSchema,
   GraphQLSchema,
+  getNamedType,
   GraphQLScalarType,
   GraphQLObjectType,
   DirectiveNode,
@@ -15,7 +16,7 @@ import {
 
 import { getArgumentValues } from 'graphql/execution/values.js';
 
-import { each, keyBy, mapValues } from 'lodash';
+import { each, keyBy, mapValues, mergeWith } from 'lodash';
 
 
 type Dictionary<T> = {[key: string]: T};
@@ -44,9 +45,9 @@ interface BooleanConstraints {
 }
 
 interface ConstraintsMap {
-  '@stringValue'?: StringConstraints;
-  '@numberValue'?: NumberConstraints;
-  '@booleanValue'?: BooleanConstraints;
+  '@stringValue'?: StringConstraints[];
+  '@numberValue'?: NumberConstraints[];
+  '@booleanValue'?: BooleanConstraints[];
 }
 
 export const constraintsIDL = new Source(`
@@ -83,39 +84,36 @@ function getDirectivesFromAST(idl:Source) {
 function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
   if (astNode === null)
     return {};
-  let result:Dictionary<Constraints> = {};
+  let result:Dictionary<Constraints[]> = {};
   astNode.directives.forEach(directiveNode => {
     const name = directiveNode.name.value;
     const directive = constraintsDirectives[name];
-    result['@' + name] = getArgumentValues(directive, directiveNode) as Constraints;
+    result['@' + name] = [getArgumentValues(directive, directiveNode) as Constraints];
   });
   return result;
 }
 
 function typeOf(value: any): string {
   if (value == null)
-    return 'Null';
+    return 'null';
 
   let type = value.constructor && value.constructor.name;
   // handle objects created with Object.create(null)
   if (!type && (typeof value === 'object'))
-    type = 'Object';
+    type = 'object';
   return type.toLowerCase();
 }
 
 function validate(value: any, directives:ConstraintsMap): void {
-  if (value === null && Object.keys(directives).length === 0)
+  if (value === null || Object.keys(directives).length === 0)
     return;
 
   const valueType = typeOf(value);
-  if (valueType === 'Array') {
-    //while () {
-    //}
+  if (valueType === 'array') {
     return value.forEach(item => validate(item, directives));
-  }
-  else if(valueType === 'Object') {
-  }
-  else {
+  } else if(valueType === 'object') {
+    // TODO
+  } else {
     const expectedDirective = `@${valueType}Value`;
     const validateFn = {
       string: stringValue,
@@ -124,51 +122,79 @@ function validate(value: any, directives:ConstraintsMap): void {
     } [valueType];
 
     const directiveNames = Object.keys(directives);
+    // we got
     if (!directiveNames.includes(expectedDirective)) {
       const allowedTypes = directiveNames.map(
         name => /@(.+)Value/.exec(name)[1]
       );
       throw Error(`Got ${valueType} expected ${allowedTypes.join(',')}`)
     }
-    return validateFn(value, directives[expectedDirective]);
+
+    for (let constraint of directives[expectedDirective]) {
+      validateFn(value, constraint);
+    }
   }
 }
 
 function stringValue(str:string, constraints: StringConstraints) {
-  if (constraints.minLength && str.length < constraints.minLength)
-    throw Error('less than minLength');
-  if (constraints.maxLength && str.length > constraints.maxLength)
-    throw Error('less than maxLength');
+  if (!constraints) return;
+  if (constraints.minLength != null && str.length < constraints.minLength)
+    throw Error('Less than minLength');
+  if (constraints.maxLength != null && str.length > constraints.maxLength)
+    throw Error('Greater than maxLength');
 }
 
 function numberValue(num:number, constraints: NumberConstraints) {
-  if (constraints.min && num < constraints.min)
-    throw Error('less than min');
-  if (constraints.max && num > constraints.max)
-    throw Error('less than max');
+  if (!constraints) return;
+  if (constraints.min != null && num < constraints.min)
+    throw Error('Less than min');
+  if (constraints.max != null && num > constraints.max)
+    throw Error('Greater than max');
 }
 
 function booleanValue(value:boolean, constraints: BooleanConstraints) {
-  if (constraints.equals && value !== constraints.equals)
+  if (!constraints) return;
+  if (constraints.equals != null && value !== constraints.equals)
     throw Error('not equals');
 }
 
+function extractScalarConstraints(schema: GraphQLSchema): Dictionary<ConstraintsMap> {
+  let res = {};
+  Object.values(schema.getTypeMap()).forEach(type => {
+    if (type instanceof GraphQLScalarType) {
+      const astNode = (type as any).astNode as ScalarTypeDefinitionNode;
+      res[type.name] = extractConstraints(astNode) as ConstraintsMap;
+    }
+  });
+  return res;
+}
+
+function mergeConstraints(obj:ConstraintsMap, source:ConstraintsMap) {
+  return mergeWith(
+    obj, source, (obj, src) => obj && obj.concat(src) || src
+  );
+}
+
 function constraintsMiddleware(schema: GraphQLSchema):void {
+  let scalarConstraints = extractScalarConstraints(schema);
+
   Object.values(schema.getTypeMap()).forEach(type => {
     if (type.name.startsWith('__'))
       return;
 
     if (type instanceof GraphQLScalarType) {
-      const astNode = (type as any).astNode as ScalarTypeDefinitionNode;
-      extractConstraints(astNode);
+      return;
     }
+
     if (type instanceof GraphQLObjectType) {
       each(type.getFields(), field => {
         const argsConstraints = mapValues(keyBy(field.args, 'name'), arg => {
           const astNode = (arg as any).astNode as InputValueDefinitionNode;
-          return extractConstraints(astNode);
+          return mergeConstraints(
+            extractConstraints(astNode),
+            scalarConstraints[getNamedType(arg.type).name]
+          );
         });
-        console.log(argsConstraints);
 
         const orginalResolve = field.resolve;
         field.resolve = (source, args, context, info) => {
@@ -183,20 +209,27 @@ function constraintsMiddleware(schema: GraphQLSchema):void {
 }
 
 const userSchema = buildSchema(`
+  scalar IntOrString @stringValue @numberValue
+  scalar Diameter @numberValue(min: 0)
   type Query {
     dummyField(
       dummyArg: String @stringValue(minLength: 5)
       dummyArg2: Int @numberValue(max: 5)
+      dummyArg3: IntOrString @numberValue(max: 5)
+      pizzaDiameter: Diameter @numberValue(max: 10)
     ): String
   }
 `);
 
 
 userSchema.getQueryType().getFields().dummyField.resolve = (() => 'Dummy');
+(userSchema.getType('Diameter') as GraphQLScalarType).parseLiteral = (ast) => {
+  return parseInt((ast as any).value);
+}
 constraintsMiddleware(userSchema);
 
 graphql(userSchema, `
   {
-    dummyField(dummyArg: "acde", dummyArg2: 4)
+    dummyField(dummyArg: "acded", dummyArg2: 4, pizzaDiameter: 11)
   }
-`).then(result => console.log(result));
+`).then(result => console.log('Result:', result));
