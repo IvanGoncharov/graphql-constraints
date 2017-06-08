@@ -25,11 +25,6 @@ interface ASTNodeWithDirectives {
   directives?: DirectiveNode[];
 }
 
-type Constraints =
-  | StringConstraints
-  | NumberConstraints
-  | BooleanConstraints;
-
 interface StringConstraints {
   minLength: number;
   maxLength: number;
@@ -88,7 +83,8 @@ function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
   astNode.directives.forEach(directiveNode => {
     const name = directiveNode.name.value;
     const directive = constraintsDirectives[name];
-    result['@' + name] = [getArgumentValues(directive, directiveNode)];
+    const constraints = getArgumentValues(directive, directiveNode);
+    result['@' + name] = Object.keys(constraints).length ? [constraints] : [];
   });
   return result;
 }
@@ -132,14 +128,13 @@ function validate(value: any, directives:ConstraintsMap): void {
       throw Error(`Got ${valueType} expected ${allowedTypes.join(',')}`)
     }
 
-    for (let constraint of directives[expectedDirective]) {
-      validateFn(value, constraint);
+    for (let directive of directives[expectedDirective]) {
+      validateFn(value, directive);
     }
   }
 }
 
 function stringValue(str:string, constraints: StringConstraints) {
-  if (!constraints) return;
   if (constraints.minLength != null && str.length < constraints.minLength)
     throw Error('Less than minLength');
   if (constraints.maxLength != null && str.length > constraints.maxLength)
@@ -147,7 +142,6 @@ function stringValue(str:string, constraints: StringConstraints) {
 }
 
 function numberValue(num:number, constraints: NumberConstraints) {
-  if (!constraints) return;
   if (constraints.min != null && num < constraints.min)
     throw Error('Less than min');
   if (constraints.max != null && num > constraints.max)
@@ -155,7 +149,6 @@ function numberValue(num:number, constraints: NumberConstraints) {
 }
 
 function booleanValue(value:boolean, constraints: BooleanConstraints) {
-  if (!constraints) return;
   if (constraints.equals != null && value !== constraints.equals)
     throw Error('not equals');
 }
@@ -165,7 +158,7 @@ function extractScalarConstraints(schema: GraphQLSchema): Dictionary<Constraints
   Object.values(schema.getTypeMap()).forEach(type => {
     if (type instanceof GraphQLScalarType) {
       const astNode = (type as any).astNode as ScalarTypeDefinitionNode;
-      res[type.name] = extractConstraints(astNode) as ConstraintsMap;
+      res[type.name] = extractConstraints(astNode);
     }
   });
   return res;
@@ -224,6 +217,7 @@ const userSchema = buildSchema(`
 `);
 
 
+
 userSchema.getQueryType().getFields().dummyField.resolve = (() => 'Dummy');
 (userSchema.getType('Diameter') as GraphQLScalarType).parseLiteral = (ast) => {
   return parseInt((ast as any).value);
@@ -232,6 +226,6 @@ constraintsMiddleware(userSchema);
 
 graphql(userSchema, `
   {
-    dummyField(dummyArg: "acded", dummyArg2: 4, pizzaDiameter: 11)
+    dummyField(dummyArg: "acded", dummyArg2: 4, pizzaDiameter: -1)
   }
 `).then(result => console.log('Result:', result));
