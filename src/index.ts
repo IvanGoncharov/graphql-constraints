@@ -170,7 +170,7 @@ function mergeConstraints(obj:ConstraintsMap, source:ConstraintsMap) {
   );
 }
 
-function constraintsMiddleware(schema: GraphQLSchema):void {
+export function constraintsMiddleware(schema: GraphQLSchema):void {
   let scalarConstraints = extractScalarConstraints(schema);
 
   Object.values(schema.getTypeMap()).forEach(type => {
@@ -203,6 +203,8 @@ function constraintsMiddleware(schema: GraphQLSchema):void {
   });
 }
 
+
+// test
 const userSchema = buildSchema(`
   scalar IntOrString @stringValue @numberValue
   scalar Diameter @numberValue(min: 0)
