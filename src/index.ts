@@ -105,11 +105,13 @@ function typeOf(value: any): string {
 }
 
 function validate(value: any, directives:ConstraintsMap): void {
-  if (value === null || Object.keys(directives).length === 0)
+  if (Object.keys(directives).length === 0)
     return;
 
   const valueType = typeOf(value);
-  if (valueType === 'array') {
+  if (valueType === 'null') {
+    return;
+  } else if (valueType === 'array') {
     return value.forEach(item => validate(item, directives));
   } else if(valueType === 'object') {
     // TODO
