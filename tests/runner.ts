@@ -13,7 +13,7 @@ chaiUse(snapshots.SnapshotMatchers({
   devMode: !!argv.update
 }));
 
-const dataDir = path.join(__dirname, 'data');
+const fixturesDir = path.join(__dirname, 'fixtures');
 const testIDLs = glob.sync('**/idl.graphql');
 
 function test(name, idl, query, config) {
@@ -28,7 +28,7 @@ function test(name, idl, query, config) {
 
 testIDLs.forEach(idlFile => {
   const dir = path.dirname(idlFile);
-  const groupName = path.relative(dataDir, dir);
+  const groupName = path.relative(fixturesDir, dir);
   const idl = fs.readFileSync(idlFile).toString();
   describe(groupName, () => {
     const queriesGlob = path.join(dir, '*.query.graphql');
