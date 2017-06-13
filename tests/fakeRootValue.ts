@@ -34,7 +34,8 @@ function fakeType(type: GraphQLOutputType, schema: GraphQLSchema) {
   }
   if (isAbstractType(type)) {
     const possibleTypes = schema.getPossibleTypes(type);
-    return fakeType(possibleTypes[0], schema);
+    const chosenType = possibleTypes[0];
+    return {...fakeType(chosenType, schema), __typename: chosenType.name };
   }
 
   if (type instanceof GraphQLObjectType) {
