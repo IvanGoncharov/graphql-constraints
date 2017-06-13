@@ -23,7 +23,9 @@ interface TestConfig {
   idl: string;
   query?: string;
   rootObject?: string;
-  options?: any;
+  options: {
+    rootValue?: any;
+  };
 }
 
 function initSchema(schema: GraphQLSchema) {
@@ -44,7 +46,7 @@ async function test() {
 
   constraintsMiddleware(schema);
 
-  graphql(schema, config.query, config.rootObject || {}).then(result => {
+  graphql(schema, config.query, config.options.rootValue || {}).then(result => {
     stdout.write(JSON.stringify(result));
   });
 }

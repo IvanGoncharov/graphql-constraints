@@ -6,6 +6,8 @@ import { execSync } from 'child_process';
 import { expect, use as chaiUse } from 'chai';
 import * as snapshots from './chai-snapshots';
 
+import { fakeRootValue } from './fakeRootValue';
+
 const argv = require('yargs').argv
 
 chaiUse(snapshots.SnapshotMatchers({
@@ -16,28 +18,32 @@ chaiUse(snapshots.SnapshotMatchers({
 const fixturesDir = path.join(__dirname, 'fixtures');
 const testIDLs = glob.sync('**/idl.graphql');
 
-function test(name, idl, query, config) {
+function test(name, idl, query, options = {}) {
   const testInput = {
-    idl, query, config
+    idl, query, options
   };
+  console.log(testInput);
   const res = JSON.parse(
     execSync(argv.command, {input: JSON.stringify(testInput)}).toString()
   );
   expect(res).to.matchSnapshotJSON(name);
 }
 
+
 testIDLs.forEach(idlFile => {
   const dir = path.dirname(idlFile);
   const groupName = path.relative(fixturesDir, dir);
-  const idl = fs.readFileSync(idlFile).toString();
   describe(groupName, () => {
+    const idl = fs.readFileSync(idlFile).toString();
+    const rootValue = fakeRootValue(idl);
+
     const queriesGlob = path.join(dir, '*.query.graphql');
     const queries = glob.sync(queriesGlob);
     for (let queryFileName of queries) {
       let snapshotPath = path.join(groupName, path.basename(queryFileName, '.query.graphql')) + '.json';
       it(queryFileName, () => {
         let query = fs.readFileSync(queryFileName).toString();
-        test(snapshotPath, idl, query, {});
+        test(snapshotPath, idl, query, { rootValue });
       });
     }
   });
