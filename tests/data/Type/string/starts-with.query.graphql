@@ -1,0 +1,4 @@
+{
+  fail: field(startsWithArg: "not-test")
+  pass: field(startsWithArg: "test-test")
+}

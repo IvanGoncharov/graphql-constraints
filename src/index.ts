@@ -3,6 +3,7 @@ import {
   parse,
   concatAST,
   buildASTSchema,
+  defaultFieldResolver,
   GraphQLSchema,
   getNamedType,
   GraphQLScalarType,
@@ -26,6 +27,8 @@ interface ASTNodeWithDirectives {
 interface StringConstraints {
   minLength: number;
   maxLength: number;
+  startsWith: string;
+  endsWith: string;
 }
 
 interface NumberConstraints {
@@ -52,6 +55,8 @@ directive @numberValue(
 directive @stringValue(
   minLength: Int
   maxLength: Int
+  startsWith: String
+  endsWith: String
 ) on FIELD | QUERY
 `, 'constraintsIDL');
 
@@ -137,6 +142,10 @@ function stringValue(str:string, constraints: StringConstraints) {
     throw Error('Less than minLength');
   if (constraints.maxLength != null && str.length > constraints.maxLength)
     throw Error('Greater than maxLength');
+  if (constraints.startsWith != null && !str.startsWith(constraints.startsWith))
+    throw Error(`Doesn\'t start with ${constraints.startsWith}`);
+  if (constraints.endsWith != null && !str.endsWith(constraints.endsWith))
+    throw Error(`Doesn\'t end with ${constraints.endsWith}`);
 }
 
 function numberValue(num:number, constraints: NumberConstraints) {
@@ -189,7 +198,7 @@ export function constraintsMiddleware(schema: GraphQLSchema):void {
           );
         });
 
-        const orginalResolve = field.resolve;
+        const orginalResolve = field.resolve || defaultFieldResolver;
         field.resolve = (source, args, context, info) => {
           each(args, (value, name) => {
             validate(value, argsConstraints[name]);
