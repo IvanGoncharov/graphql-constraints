@@ -17,6 +17,7 @@ import { getArgumentValues } from 'graphql/execution/values.js';
 
 import { each, keyBy, mapValues, mergeWith } from 'lodash';
 
+import { constraintsIDL } from './utils';
 
 type Dictionary<T> = {[key: string]: T};
 
@@ -25,19 +26,20 @@ interface ASTNodeWithDirectives {
 }
 
 interface StringConstraints {
-  minLength: number;
-  maxLength: number;
-  startsWith: string;
-  endsWith: string;
+  minLength?: number;
+  maxLength?: number;
+  startsWith?: string;
+  endsWith?: string;
+  includes?: string;
 }
 
 interface NumberConstraints {
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
 }
 
 interface BooleanConstraints {
-  equals: boolean;
+  equals?: boolean;
 }
 
 interface ConstraintsMap {
@@ -45,20 +47,6 @@ interface ConstraintsMap {
   '@numberValue'?: NumberConstraints[];
   '@booleanValue'?: BooleanConstraints[];
 }
-
-export const constraintsIDL = new Source(`
-directive @numberValue(
-  min: Float
-  max: Float
-) on FIELD | QUERY
-
-directive @stringValue(
-  minLength: Int
-  maxLength: Int
-  startsWith: String
-  endsWith: String
-) on FIELD | QUERY
-`, 'constraintsIDL');
 
 const constraintsDirectives = getDirectivesFromAST(constraintsIDL);
 
@@ -146,6 +134,8 @@ function stringValue(str:string, constraints: StringConstraints) {
     throw Error(`Doesn\'t start with ${constraints.startsWith}`);
   if (constraints.endsWith != null && !str.endsWith(constraints.endsWith))
     throw Error(`Doesn\'t end with ${constraints.endsWith}`);
+  if (constraints.includes != null && !str.includes(constraints.includes))
+    throw Error(`Doesn\'t includes ${constraints.endsWith}`);
 }
 
 function numberValue(num:number, constraints: NumberConstraints) {
@@ -203,7 +193,8 @@ export function constraintsMiddleware(schema: GraphQLSchema):void {
           each(args, (value, name) => {
             validate(value, argsConstraints[name]);
           });
-          return orginalResolve(source, args, context, info);
+          let res = orginalResolve(source, args, context, info);
+          return res;
         };
       });
     }
