@@ -22,7 +22,6 @@ function test(name, idl, query, options = {}) {
   const testInput = {
     idl, query, options
   };
-  console.log(testInput);
   const res = JSON.parse(
     execSync(argv.command, {input: JSON.stringify(testInput)}).toString()
   );
