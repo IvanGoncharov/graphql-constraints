@@ -1,0 +1,4 @@
+{
+  fail: field(includesArg: "do-not-include")
+  pass: field(includesArg: "includes-test-substring")
+}

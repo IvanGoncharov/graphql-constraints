@@ -1,7 +1,7 @@
 {
   "data": {
     "fail": null,
-    "pass": null
+    "pass": "String Value"
   },
   "errors": [
     {

@@ -6,5 +6,6 @@ type Query {
     arg3: String @stringValue(minLength: 2, maxLength: 4)
     startsWithArg: String @stringValue(startsWith: "test")
     endsWithArg: String @stringValue(endsWith: "test")
+    includesArg: String @stringValue(includes: "test")
   ): String
 }
