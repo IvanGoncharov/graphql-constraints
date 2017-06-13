@@ -46,6 +46,7 @@ function fakeType(type: GraphQLOutputType, schema: GraphQLSchema) {
   }
 
   if (type instanceof GraphQLScalarType) {
-    return defaultValues[type.name] || `<${type.name}>`;
+    const value = defaultValues[type.name];
+    return value != null ? value : `<${type.name}>`;
   }
 }
