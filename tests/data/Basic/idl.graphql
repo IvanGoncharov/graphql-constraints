@@ -1,0 +1,10 @@
+scalar IntOrString @stringValue @numberValue
+scalar Diameter @numberValue(min: 0)
+type Query {
+  dummyField(
+    dummyArg: String @stringValue(minLength: 5)
+    dummyArg2: Int @numberValue(max: 5)
+    dummyArg3: IntOrString @numberValue(max: 5)
+    pizzaDiameter: Diameter @numberValue(max: 10)
+  ): String
+}

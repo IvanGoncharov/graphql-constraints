@@ -1,0 +1,8 @@
+
+type Query {
+  field(
+    arg1: String @stringValue(maxLength: 1)
+    arg2: String @stringValue(minLength: 1)
+    arg3: String @stringValue(minLength: 2, maxLength: 4)
+  ): String
+}

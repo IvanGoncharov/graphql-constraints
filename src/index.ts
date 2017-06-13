@@ -1,9 +1,7 @@
 import {
-  graphql,
   Source,
   parse,
   concatAST,
-  buildSchema,
   buildASTSchema,
   GraphQLSchema,
   getNamedType,
@@ -202,32 +200,3 @@ export function constraintsMiddleware(schema: GraphQLSchema):void {
     }
   });
 }
-
-
-// test
-const userSchema = buildSchema(`
-  scalar IntOrString @stringValue @numberValue
-  scalar Diameter @numberValue(min: 0)
-  type Query {
-    dummyField(
-      dummyArg: String @stringValue(minLength: 5)
-      dummyArg2: Int @numberValue(max: 5)
-      dummyArg3: IntOrString @numberValue(max: 5)
-      pizzaDiameter: Diameter @numberValue(max: 10)
-    ): String
-  }
-`);
-
-
-
-userSchema.getQueryType().getFields().dummyField.resolve = (() => 'Dummy');
-(userSchema.getType('Diameter') as GraphQLScalarType).parseLiteral = (ast) => {
-  return parseInt((ast as any).value);
-}
-constraintsMiddleware(userSchema);
-
-graphql(userSchema, `
-  {
-    dummyField(dummyArg: "acded", dummyArg2: 4, pizzaDiameter: -1)
-  }
-`).then(result => console.log('Result:', result));

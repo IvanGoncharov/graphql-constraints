@@ -13,7 +13,10 @@
     "outDir": "lib",
     "pretty": true,
     "types": [
-      "webpack"
+      "node",
+      "webpack",
+      "mocha",
+      "chai"
     ],
     "lib": ["es2016", "es2017"]
   },
@@ -24,6 +27,7 @@
     "lib"
   ],
   "include": [
+    "./tests/**/*.ts",
     "./src/**/*.ts",
     "./src/**/*.tsx"
   ],

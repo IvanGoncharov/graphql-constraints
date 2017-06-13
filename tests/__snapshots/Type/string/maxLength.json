@@ -1,0 +1,19 @@
+{
+  "data": {
+    "field": null
+  },
+  "errors": [
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 2
+        }
+      ],
+      "message": "Greater than maxLength",
+      "path": [
+        "field"
+      ]
+    }
+  ]
+}

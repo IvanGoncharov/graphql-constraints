@@ -1,0 +1,19 @@
+{
+  "data": {
+    "dummyField": null
+  },
+  "errors": [
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 2
+        }
+      ],
+      "message": "Less than min",
+      "path": [
+        "dummyField"
+      ]
+    }
+  ]
+}

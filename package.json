@@ -4,18 +4,30 @@
     "tsc": "tsc",
     "build:bundle": "webpack -p --config webpack.config.js",
     "build": "rimraf lib/ && npm run tsc && npm run build:bundle",
-    "start": "npm run tsc && node ./lib/index.js"
+    "start": "ts-node ./src/index.ts",
+    "mocha": "mocha -r ts-node/register tests/runner.ts",
+    "test": "npm run mocha -- --command \"ts-node ./tests/test-server.ts\""
   },
   "dependencies": {
     "graphql": "github:apis-guru/graphql-js#astNode-fork-dist",
     "lodash": "^4.17.4"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.0",
     "@types/graphql": "^0.9.0",
     "@types/lodash": "^4.14.65",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.29",
     "@types/webpack": "^2.2.15",
     "awesome-typescript-loader": "^3.1.2",
+    "chai": "^4.0.2",
+    "chai-snapshots": "^1.0.6",
+    "get-stream": "^3.0.0",
+    "glob": "^7.1.2",
+    "mkdirp": "^0.5.1",
+    "mocha": "^3.4.2",
     "rimraf": "^2.6.1",
+    "ts-node": "^3.0.6",
     "typescript": "^2.2.2",
     "webpack": "^2.4.1"
   },
