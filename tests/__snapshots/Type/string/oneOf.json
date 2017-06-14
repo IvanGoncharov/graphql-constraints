@@ -1,0 +1,48 @@
+{
+  "data": {
+    "fail": null,
+    "fail2": null,
+    "fail3": null,
+    "pass": "String Value",
+    "pass2": "String Value",
+    "pass3": "String Value"
+  },
+  "errors": [
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 2
+        }
+      ],
+      "message": "Not one of \"one, of, test\"",
+      "path": [
+        "fail"
+      ]
+    },
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 3
+        }
+      ],
+      "message": "Not one of \"one, of, test\"",
+      "path": [
+        "fail2"
+      ]
+    },
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 4
+        }
+      ],
+      "message": "Not one of \"one, of, test\"",
+      "path": [
+        "fail3"
+      ]
+    }
+  ]
+}

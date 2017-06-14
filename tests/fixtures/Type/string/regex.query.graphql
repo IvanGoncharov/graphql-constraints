@@ -1,0 +1,6 @@
+{
+  fail: field(regexArg: "CamelCase")
+  fail2: field(regexArg: "kebab-case")
+  fail3: field(regexArg: "ALL CAPITAL WITH SPACES")
+  pass: field(regexArg: "ALLCAPITAL")
+}

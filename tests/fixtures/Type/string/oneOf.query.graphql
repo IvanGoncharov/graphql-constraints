@@ -1,0 +1,8 @@
+{
+  fail: field(oneOfArg: "some")
+  fail2: field(oneOfArg: "other")
+  fail3: field(oneOfArg: "test2")
+  pass: field(oneOfArg: "one")
+  pass2: field(oneOfArg: "of")
+  pass3: field(oneOfArg: "test")
+}

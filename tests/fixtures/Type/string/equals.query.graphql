@@ -1,0 +1,7 @@
+{
+  fail: field(equalsArg: "Hello")
+  fail2: field(equalsArg: "world")
+  fail3: field(equalsArg: "Hello World")
+  fail4: field(equalsArg: "To be or not to be")
+  pass: field(equalsArg: "hello world")
+}
