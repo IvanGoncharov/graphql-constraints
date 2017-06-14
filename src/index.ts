@@ -57,8 +57,9 @@ interface ConstraintsMap {
 const constraintsDirectives = getDirectivesFromAST(constraintsIDL);
 
 function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
-  if (astNode === null)
+  if (astNode === null) {
     return {};
+  }
   let result = {};
   astNode.directives.forEach(directiveNode => {
     const name = directiveNode.name.value;
@@ -70,8 +71,9 @@ function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
 }
 
 function validate(value: any, directives:ConstraintsMap): void {
-  if (Object.keys(directives).length === 0)
+  if (Object.keys(directives).length === 0) {
     return;
+  }
 
   const valueType = typeOf(value);
   if (valueType === 'null') {
@@ -155,8 +157,9 @@ function numberValue(num:number, constraints: NumberConstraints) {
 }
 
 function booleanValue(value:boolean, constraints: BooleanConstraints) {
-  if (constraints.equals != null && value !== constraints.equals)
+  if (constraints.equals != null && value !== constraints.equals) {
     throw Error('not equals');
+  }
 }
 
 function extractScalarConstraints(schema: GraphQLSchema): Dictionary<ConstraintsMap> {
@@ -180,8 +183,9 @@ export function constraintsMiddleware(schema: GraphQLSchema):void {
   let scalarConstraints = extractScalarConstraints(schema);
 
   Object.values(schema.getTypeMap()).forEach(type => {
-    if (type.name.startsWith('__'))
+    if (type.name.startsWith('__')) {
       return;
+    }
 
     if (type instanceof GraphQLScalarType) {
       return;
