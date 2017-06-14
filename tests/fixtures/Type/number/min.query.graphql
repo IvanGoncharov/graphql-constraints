@@ -1,0 +1,5 @@
+{
+  fail: field(minArg: 0)
+  pass: field(minArg: 1)
+  pass2: field(minArg: 0.5)
+}

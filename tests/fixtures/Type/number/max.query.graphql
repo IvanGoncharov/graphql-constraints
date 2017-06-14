@@ -1,0 +1,6 @@
+{
+  fail: field(maxArg: 11)
+  fail2: field(maxArg: 10.1)
+  pass: field(maxArg: 10)
+  pass2: field(maxArg: 0)
+}

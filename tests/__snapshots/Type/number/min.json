@@ -1,0 +1,21 @@
+{
+  "data": {
+    "fail": null,
+    "pass": 0,
+    "pass2": 0
+  },
+  "errors": [
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 2
+        }
+      ],
+      "message": "Less than min",
+      "path": [
+        "fail"
+      ]
+    }
+  ]
+}

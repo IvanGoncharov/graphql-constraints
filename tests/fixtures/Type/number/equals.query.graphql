@@ -1,0 +1,5 @@
+{
+  fail: field(equalsArg: 2)
+  fail2: field(equalsArg: 10)
+  pass: field(equalsArg: 3.14)
+}

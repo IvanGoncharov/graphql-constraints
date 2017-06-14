@@ -1,0 +1,7 @@
+{
+  fail: field(multipleOfArg: 2.99)
+  fail2: field(multipleOfArg: 10.11)
+  pass: field(multipleOfArg: 3)
+  pass2: field(multipleOfArg: 3.1)
+  pass3: field(multipleOfArg: 99.90)
+}

@@ -1,0 +1,6 @@
+{
+  fail: field(exclusiveMaxArg: 3.14)
+  fail2: field(exclusiveMaxArg: 4)
+  pass: field(exclusiveMaxArg: 3.13)
+  pass2: field(exclusiveMaxArg: 0)
+}

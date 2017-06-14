@@ -1,0 +1,6 @@
+{
+  fail: field(exclusiveMinArg: 1)
+  fail2: field(exclusiveMinArg: 0.9)
+  pass: field(exclusiveMinArg: 1.1)
+  pass2: field(exclusiveMinArg: 2)
+}

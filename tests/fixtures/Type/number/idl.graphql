@@ -1,0 +1,12 @@
+
+type Query {
+  field(
+    minArg: Float @numberValue(min: 0.5)
+    maxArg: Float @numberValue(max: 10)
+    exclusiveMinArg: Float @numberValue(exclusiveMin: 1)
+    exclusiveMaxArg: Float @numberValue(exclusiveMax: 3.14)
+    oneOfArg: Float @numberValue(oneOf: [0, 1.2, 2.3])
+    equalsArg: Float @numberValue(equals: 3.14)
+    multipleOfArg: Float @numberValue(multipleOf: 0.1)
+  ): Int
+}

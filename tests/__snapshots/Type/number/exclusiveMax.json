@@ -1,0 +1,34 @@
+{
+  "data": {
+    "fail": null,
+    "fail2": null,
+    "pass": 0,
+    "pass2": 0
+  },
+  "errors": [
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 2
+        }
+      ],
+      "message": "Greater or equal to exclusiveMax",
+      "path": [
+        "fail"
+      ]
+    },
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 3
+        }
+      ],
+      "message": "Greater or equal to exclusiveMax",
+      "path": [
+        "fail2"
+      ]
+    }
+  ]
+}

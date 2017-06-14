@@ -1,0 +1,7 @@
+{
+  fail: field(oneOfArg: 2)
+  fail2: field(oneOfArg: 10)
+  pass: field(oneOfArg: 0)
+  pass2: field(oneOfArg: 1.2)
+  pass3: field(oneOfArg: 2.3)
+}

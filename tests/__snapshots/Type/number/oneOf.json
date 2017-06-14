@@ -1,0 +1,35 @@
+{
+  "data": {
+    "fail": null,
+    "fail2": null,
+    "pass": 0,
+    "pass2": 0,
+    "pass3": 0
+  },
+  "errors": [
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 2
+        }
+      ],
+      "message": "Not one of \"0, 1.2, 2.3\"",
+      "path": [
+        "fail"
+      ]
+    },
+    {
+      "locations": [
+        {
+          "column": 3,
+          "line": 3
+        }
+      ],
+      "message": "Not one of \"0, 1.2, 2.3\"",
+      "path": [
+        "fail2"
+      ]
+    }
+  ]
+}
