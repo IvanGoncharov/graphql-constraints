@@ -29,6 +29,9 @@ interface StringConstraints {
   startsWith?: string;
   endsWith?: string;
   includes?: string;
+  oneOf?: string[];
+  equals?: string;
+  regex: string;
 }
 
 interface NumberConstraints {
@@ -101,16 +104,30 @@ function validate(value: any, directives:ConstraintsMap): void {
 }
 
 function stringValue(str:string, constraints: StringConstraints) {
-  if (constraints.minLength != null && str.length < constraints.minLength)
+  if (constraints.minLength != null && str.length < constraints.minLength) {
     throw Error('Less than minLength');
-  if (constraints.maxLength != null && str.length > constraints.maxLength)
+  }
+  if (constraints.maxLength != null && str.length > constraints.maxLength) {
     throw Error('Greater than maxLength');
-  if (constraints.startsWith != null && !str.startsWith(constraints.startsWith))
+  }
+  if (constraints.startsWith != null && !str.startsWith(constraints.startsWith)) {
     throw Error(`Doesn\'t start with ${constraints.startsWith}`);
-  if (constraints.endsWith != null && !str.endsWith(constraints.endsWith))
+  }
+  if (constraints.endsWith != null && !str.endsWith(constraints.endsWith)) {
     throw Error(`Doesn\'t end with ${constraints.endsWith}`);
-  if (constraints.includes != null && !str.includes(constraints.includes))
+  }
+  if (constraints.includes != null && !str.includes(constraints.includes)) {
     throw Error(`Doesn\'t includes ${constraints.endsWith}`);
+  }
+  if (constraints.oneOf != null && !constraints.oneOf.includes(str)) {
+    throw Error(`Not one of "${constraints.oneOf.join(', ')}"`);
+  }
+  if (constraints.equals != null && str != constraints.equals) {
+    throw Error(`Not equal to "${constraints.equals}"`);
+  }
+  if (constraints.regex != null && RegExp(constraints.regex).test(str) === false) {
+    throw Error(`Does not match pattern "${constraints.regex}"`);
+  }
 }
 
 function numberValue(num:number, constraints: NumberConstraints) {

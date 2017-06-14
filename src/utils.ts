@@ -28,6 +28,9 @@ directive @stringValue(
   startsWith: String
   endsWith: String
   includes: String
+  oneOf: [String]
+  equals: String
+  regex: String
 ) on FIELD | ARGUMENT_DEFINITION | SCALAR
 `, 'constraintsIDL');
 
