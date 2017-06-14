@@ -13,11 +13,11 @@ import {
 import { mapValues } from 'lodash';
 
 const defaultValues = {
-  'Int': 0,
-  'Float': 0,
-  'String': 'String Value',
+  'Int': 1,
+  'Float': 0.123,
+  'String': 'some string',
   'Boolean': false,
-  'ID': 'ID'
+  'ID': '$ID'
 };
 
 export function fakeRootValue(idl: string|Source):any {

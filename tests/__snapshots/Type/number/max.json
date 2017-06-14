@@ -2,8 +2,8 @@
   "data": {
     "fail": null,
     "fail2": null,
-    "pass": 0,
-    "pass2": 0
+    "pass": 1,
+    "pass2": 1
   },
   "errors": [
     {
