@@ -3,7 +3,7 @@
     "fail": null,
     "fail2": null,
     "fail3": null,
-    "pass": "String Value"
+    "pass": "some string"
   },
   "errors": [
     {

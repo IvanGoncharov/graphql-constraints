@@ -3,9 +3,9 @@
     "fail": null,
     "fail2": null,
     "fail3": null,
-    "pass": "String Value",
-    "pass2": "String Value",
-    "pass3": "String Value"
+    "pass": "some string",
+    "pass2": "some string",
+    "pass3": "some string"
   },
   "errors": [
     {
