@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
-import * as stringify from 'json-stable-stringify';
+import * as stableStringify from 'json-stable-stringify';
 
 let snapshots = {};
 let pathToSnaps = "";
@@ -10,6 +10,10 @@ let pathToSnaps = "";
 export type ChaiSnapshotsOptions = {
   pathToSnaps?: string;
   devMode?: boolean;
+}
+
+function stringify(value: any): string {
+  return stableStringify(value, {space: '  '}) + '\n';
 }
 
 function getSnapshot(key, options):object|null {
@@ -41,8 +45,8 @@ export const SnapshotMatchers = function (options: ChaiSnapshotsOptions = {}) {
         // TODO think if should fail or recreate if no snapshot
         snapshots[path] = snapshot = _.cloneDeep(obj);
       };
-      const expected = stringify(snapshot, {space: '  '});
-      const actual = stringify(obj, {space: '  '});
+      const expected = stringify(snapshot);
+      const actual = stringify(obj);
       chai.expect(expected, "Expected snapshot to match").to.eql(actual);
     });
   }
@@ -53,7 +57,7 @@ if (after) {
     if (!Object.keys(snapshots).length) return;
     console.log('  Saving snapshots');
     for (let file in snapshots) {
-      const data = stringify(snapshots[file], {space: '  '});
+      const data = stringify(snapshots[file]);
       let fileName = path.join(pathToSnaps, file);
       mkdirp.sync(path.dirname(fileName));
       fs.writeFileSync(fileName, data, {flag: "w"});
