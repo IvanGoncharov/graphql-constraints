@@ -1,8 +1,4 @@
 import {
-  Source,
-  parse,
-  concatAST,
-  buildASTSchema,
   defaultFieldResolver,
   GraphQLSchema,
   getNamedType,
@@ -17,9 +13,11 @@ import { getArgumentValues } from 'graphql/execution/values.js';
 
 import { each, keyBy, mapValues, mergeWith } from 'lodash';
 
-import { constraintsIDL } from './utils';
-
-type Dictionary<T> = {[key: string]: T};
+import { constraintsIDL,
+  getDirectivesFromAST,
+  Dictionary,
+  typeOf,
+} from './utils';
 
 interface ASTNodeWithDirectives {
   directives?: DirectiveNode[];
@@ -36,6 +34,11 @@ interface StringConstraints {
 interface NumberConstraints {
   min?: number;
   max?: number;
+  exclusiveMax?: number;
+  exclusiveMin?: number;
+  oneOf?: number[];
+  equals?: number;
+  multipleOf?: number;
 }
 
 interface BooleanConstraints {
@@ -50,23 +53,6 @@ interface ConstraintsMap {
 
 const constraintsDirectives = getDirectivesFromAST(constraintsIDL);
 
-function getDirectivesFromAST(idl:Source) {
-  const dummyIDL = `
-    type Query {
-      dummy: String
-    }
-  `;
-  const fullAST = concatAST([parse(idl), parse(dummyIDL)]);
-  const schema = buildASTSchema(fullAST);
-
-  const directives = keyBy(schema.getDirectives(), 'name');
-  delete directives.skip;
-  delete directives.include;
-  delete directives.deprecated;
-
-  return directives;
-}
-
 function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
   if (astNode === null)
     return {};
@@ -78,17 +64,6 @@ function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
     result['@' + name] = Object.keys(constraints).length ? [constraints] : [];
   });
   return result;
-}
-
-function typeOf(value: any): string {
-  if (value == null)
-    return 'null';
-
-  let type = value.constructor && value.constructor.name;
-  // handle objects created with Object.create(null)
-  if (!type && (typeof value === 'object'))
-    type = 'object';
-  return type.toLowerCase();
 }
 
 function validate(value: any, directives:ConstraintsMap): void {
@@ -139,10 +114,27 @@ function stringValue(str:string, constraints: StringConstraints) {
 }
 
 function numberValue(num:number, constraints: NumberConstraints) {
-  if (constraints.min != null && num < constraints.min)
+  if (constraints.min != null && num < constraints.min) {
     throw Error('Less than min');
-  if (constraints.max != null && num > constraints.max)
+  }
+  if (constraints.max != null && num > constraints.max) {
     throw Error('Greater than max');
+  }
+  if (constraints.exclusiveMax != null && num >= constraints.exclusiveMax) {
+    throw Error('Greater or equal to exclusiveMax');
+  }
+  if (constraints.exclusiveMin != null && num <= constraints.exclusiveMin) {
+    throw Error('Less or eqaul to exclusiveMin');
+  }
+  if (constraints.oneOf != null && !constraints.oneOf.includes(num)) {
+    throw Error(`Not one of "${constraints.oneOf.join(', ')}"`);
+  }
+  if (constraints.equals != null && num != constraints.equals) {
+    throw Error(`Not equal to "${constraints.equals}"`);
+  }
+  if (constraints.multipleOf != null && (num / constraints.multipleOf % 1 !== 0)) {
+    throw Error(`Not multiple of "${constraints.multipleOf}"`);
+  }
 }
 
 function booleanValue(value:boolean, constraints: BooleanConstraints) {
