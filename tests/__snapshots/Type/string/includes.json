@@ -11,7 +11,7 @@
           "line": 2
         }
       ],
-      "message": "Doesn't includes undefined",
+      "message": "Doesn't includes test",
       "path": [
         "fail"
       ]

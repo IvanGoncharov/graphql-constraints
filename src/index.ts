@@ -12,7 +12,7 @@ import {
 
 import { getArgumentValues } from 'graphql/execution/values.js';
 
-import { each, keyBy, mapValues, mergeWith } from 'lodash';
+import { each, keyBy, mapValues, mergeWith, upperFirst } from 'lodash';
 
 import {
   constraintsIDL,
@@ -94,12 +94,6 @@ function validate(value: any, directives:ConstraintsMap): void {
     // TODO
   } else {
     const expectedDirective = `@${valueType}Value`;
-    const validateFn = {
-      string: stringValue,
-      number: numberValue,
-      boolean: booleanValue,
-    } [valueType];
-
     const directiveNames = Object.keys(directives);
     // we got
     if (!directiveNames.includes(expectedDirective)) {
@@ -110,67 +104,56 @@ function validate(value: any, directives:ConstraintsMap): void {
     }
 
     for (let directive of directives[expectedDirective]) {
-      validateFn(value, directive);
+      each(directive, (constraint, name) => {
+        if (constraintsMap[name](constraint, value)) {
+          return;
+        }
+        const code = upperFirst(valueType) + 'Value' + upperFirst(name);
+        const message = errorsMessages[code](constraint,value);
+        throw Error(message);
+      });
     }
   }
 }
 
-function stringValue(str:string, constraints: StringConstraints) {
-  if (constraints.minLength != null && str.length < constraints.minLength) {
-    throw Error('Less than minLength');
-  }
-  if (constraints.maxLength != null && str.length > constraints.maxLength) {
-    throw Error('Greater than maxLength');
-  }
-  if (constraints.startsWith != null && !str.startsWith(constraints.startsWith)) {
-    throw Error(`Doesn\'t start with ${constraints.startsWith}`);
-  }
-  if (constraints.endsWith != null && !str.endsWith(constraints.endsWith)) {
-    throw Error(`Doesn\'t end with ${constraints.endsWith}`);
-  }
-  if (constraints.includes != null && !str.includes(constraints.includes)) {
-    throw Error(`Doesn\'t includes ${constraints.endsWith}`);
-  }
-  if (constraints.oneOf != null && !constraints.oneOf.includes(str)) {
-    throw Error(`Not one of "${constraints.oneOf.join(', ')}"`);
-  }
-  if (constraints.equals != null && str != constraints.equals) {
-    throw Error(`Not equal to "${constraints.equals}"`);
-  }
-  if (constraints.regex != null && RegExp(constraints.regex).test(str) === false) {
-    throw Error(`Does not match pattern "${constraints.regex}"`);
-  }
-}
+const constraintsMap = {
+  oneOf: (constraint, value) => constraint.includes(value),
+  equals: (constraints, value) => value === constraints,
 
-function numberValue(num:number, constraints: NumberConstraints) {
-  if (constraints.min != null && num < constraints.min) {
-    throw Error('Less than min');
-  }
-  if (constraints.max != null && num > constraints.max) {
-    throw Error('Greater than max');
-  }
-  if (constraints.exclusiveMax != null && num >= constraints.exclusiveMax) {
-    throw Error('Greater or equal to exclusiveMax');
-  }
-  if (constraints.exclusiveMin != null && num <= constraints.exclusiveMin) {
-    throw Error('Less or eqaul to exclusiveMin');
-  }
-  if (constraints.oneOf != null && !constraints.oneOf.includes(num)) {
-    throw Error(`Not one of "${constraints.oneOf.join(', ')}"`);
-  }
-  if (constraints.equals != null && num != constraints.equals) {
-    throw Error(`Not equal to "${constraints.equals}"`);
-  }
-  if (constraints.multipleOf != null && (num / constraints.multipleOf % 1 !== 0)) {
-    throw Error(`Not multiple of "${constraints.multipleOf}"`);
-  }
-}
+  minLength: (constraint, str) => str.length >= constraint,
+  maxLength: (constraint, str) => str.length <= constraint,
+  startsWith: (constraint, str) => str.startsWith(constraint),
+  endsWith: (constraint, str) => str.endsWith(constraint),
+  includes: (constraint, str) => str.includes(constraint),
+  regex: (constraint, str) => RegExp(constraint).test(str),
 
-function booleanValue(value:boolean, constraints: BooleanConstraints) {
-  if (constraints.equals != null && value !== constraints.equals) {
-    throw Error('not equals');
-  }
-}
+  min: (constraint, num) => num >= constraint,
+  max: (constraint, num) => num <= constraint,
+  exclusiveMin: (constraint, num) => num > constraint,
+  exclusiveMax: (constraint, num) => num < constraint,
+  multipleOf: (constraint, num) => num / constraint % 1 === 0,
+};
+
+const errorsMessages = {
+  StringValueMinLength: () => 'Less than minLength',
+  StringValueMaxLength: () => 'Greater than maxLength',
+  StringValueStartsWith: (startsWith) => `Doesn't start with ${startsWith}`,
+  StringValueEndsWith: (endsWith) => `Doesn't end with ${endsWith}`,
+  StringValueIncludes: (includes) => `Doesn't includes ${includes}`,
+  StringValueOneOf: (oneOf) => `Not one of "${oneOf.join(', ')}"`,
+  StringValueEquals: (equals) => `Not equal to "${equals}"`,
+  StringValueRegex: (regex) => `Does not match pattern "${regex}"`,
+
+  NumberValueMin: () => 'Less than min',
+  NumberValueMax: () => 'Greater than max',
+  NumberValueExclusiveMax: () => 'Greater or equal to exclusiveMax',
+  NumberValueExclusiveMin: () => 'Less or eqaul to exclusiveMin',
+  NumberValueOneOf: (oneOf) => `Not one of "${oneOf.join(', ')}"`,
+  NumberValueEquals: (equals) => `Not equal to "${equals}"`,
+  NumberValueMultipleOf: (multipleOf) => `Not multiple of "${multipleOf}"`,
+
+  BooleanValueEquals: () => 'not equals',
+};
 
 function isStandardType(type) {
   return type.name.startsWith('__');
