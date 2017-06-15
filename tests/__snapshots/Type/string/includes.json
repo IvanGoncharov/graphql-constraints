@@ -1,20 +1,22 @@
 {
-  "data": {
-    "fail": null,
-    "pass": "some string"
-  },
-  "errors": [
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 2
-        }
-      ],
-      "message": "Doesn't includes test",
-      "path": [
-        "fail"
-      ]
-    }
-  ]
+  "response": {
+    "data": {
+      "fail": null,
+      "pass": "some string"
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 2
+          }
+        ],
+        "message": "Doesn't includes test",
+        "path": [
+          "fail"
+        ]
+      }
+    ]
+  }
 }

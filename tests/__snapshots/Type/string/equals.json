@@ -1,59 +1,61 @@
 {
-  "data": {
-    "fail": null,
-    "fail2": null,
-    "fail3": null,
-    "fail4": null,
-    "pass": "some string"
-  },
-  "errors": [
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 2
-        }
-      ],
-      "message": "Not equal to \"hello world\"",
-      "path": [
-        "fail"
-      ]
+  "response": {
+    "data": {
+      "fail": null,
+      "fail2": null,
+      "fail3": null,
+      "fail4": null,
+      "pass": "some string"
     },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 3
-        }
-      ],
-      "message": "Not equal to \"hello world\"",
-      "path": [
-        "fail2"
-      ]
-    },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 4
-        }
-      ],
-      "message": "Not equal to \"hello world\"",
-      "path": [
-        "fail3"
-      ]
-    },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 5
-        }
-      ],
-      "message": "Not equal to \"hello world\"",
-      "path": [
-        "fail4"
-      ]
-    }
-  ]
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 2
+          }
+        ],
+        "message": "Not equal to \"hello world\"",
+        "path": [
+          "fail"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 3
+          }
+        ],
+        "message": "Not equal to \"hello world\"",
+        "path": [
+          "fail2"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 4
+          }
+        ],
+        "message": "Not equal to \"hello world\"",
+        "path": [
+          "fail3"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 5
+          }
+        ],
+        "message": "Not equal to \"hello world\"",
+        "path": [
+          "fail4"
+        ]
+      }
+    ]
+  }
 }

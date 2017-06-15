@@ -47,7 +47,7 @@ async function test() {
   constraintsMiddleware(schema);
 
   graphql(schema, config.query, config.options.rootValue || {}).then(result => {
-    stdout.write(JSON.stringify(result));
+    stdout.write(JSON.stringify({ response: result}));
   });
 }
 

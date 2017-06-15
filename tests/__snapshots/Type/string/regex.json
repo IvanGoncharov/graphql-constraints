@@ -1,46 +1,48 @@
 {
-  "data": {
-    "fail": null,
-    "fail2": null,
-    "fail3": null,
-    "pass": "some string"
-  },
-  "errors": [
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 2
-        }
-      ],
-      "message": "Does not match pattern \"^[A-Z]+$\"",
-      "path": [
-        "fail"
-      ]
+  "response": {
+    "data": {
+      "fail": null,
+      "fail2": null,
+      "fail3": null,
+      "pass": "some string"
     },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 3
-        }
-      ],
-      "message": "Does not match pattern \"^[A-Z]+$\"",
-      "path": [
-        "fail2"
-      ]
-    },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 4
-        }
-      ],
-      "message": "Does not match pattern \"^[A-Z]+$\"",
-      "path": [
-        "fail3"
-      ]
-    }
-  ]
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 2
+          }
+        ],
+        "message": "Does not match pattern \"^[A-Z]+$\"",
+        "path": [
+          "fail"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 3
+          }
+        ],
+        "message": "Does not match pattern \"^[A-Z]+$\"",
+        "path": [
+          "fail2"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 4
+          }
+        ],
+        "message": "Does not match pattern \"^[A-Z]+$\"",
+        "path": [
+          "fail3"
+        ]
+      }
+    ]
+  }
 }

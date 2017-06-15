@@ -1,33 +1,35 @@
 {
-  "data": {
-    "fail": null,
-    "fail2": null,
-    "pass": 1
-  },
-  "errors": [
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 2
-        }
-      ],
-      "message": "Not equal to \"3.14\"",
-      "path": [
-        "fail"
-      ]
+  "response": {
+    "data": {
+      "fail": null,
+      "fail2": null,
+      "pass": 1
     },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 3
-        }
-      ],
-      "message": "Not equal to \"3.14\"",
-      "path": [
-        "fail2"
-      ]
-    }
-  ]
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 2
+          }
+        ],
+        "message": "Not equal to \"3.14\"",
+        "path": [
+          "fail"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 3
+          }
+        ],
+        "message": "Not equal to \"3.14\"",
+        "path": [
+          "fail2"
+        ]
+      }
+    ]
+  }
 }

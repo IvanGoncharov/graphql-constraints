@@ -1,34 +1,36 @@
 {
-  "data": {
-    "fail": null,
-    "fail2": null,
-    "pass": 1,
-    "pass2": 1
-  },
-  "errors": [
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 2
-        }
-      ],
-      "message": "Less or eqaul to exclusiveMin",
-      "path": [
-        "fail"
-      ]
+  "response": {
+    "data": {
+      "fail": null,
+      "fail2": null,
+      "pass": 1,
+      "pass2": 1
     },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 3
-        }
-      ],
-      "message": "Less or eqaul to exclusiveMin",
-      "path": [
-        "fail2"
-      ]
-    }
-  ]
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 2
+          }
+        ],
+        "message": "Less or eqaul to exclusiveMin",
+        "path": [
+          "fail"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 3
+          }
+        ],
+        "message": "Less or eqaul to exclusiveMin",
+        "path": [
+          "fail2"
+        ]
+      }
+    ]
+  }
 }

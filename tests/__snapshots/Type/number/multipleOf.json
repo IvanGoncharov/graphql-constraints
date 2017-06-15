@@ -1,35 +1,37 @@
 {
-  "data": {
-    "fail": null,
-    "fail2": null,
-    "pass": 1,
-    "pass2": 1,
-    "pass3": 1
-  },
-  "errors": [
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 2
-        }
-      ],
-      "message": "Not multiple of \"0.1\"",
-      "path": [
-        "fail"
-      ]
+  "response": {
+    "data": {
+      "fail": null,
+      "fail2": null,
+      "pass": 1,
+      "pass2": 1,
+      "pass3": 1
     },
-    {
-      "locations": [
-        {
-          "column": 3,
-          "line": 3
-        }
-      ],
-      "message": "Not multiple of \"0.1\"",
-      "path": [
-        "fail2"
-      ]
-    }
-  ]
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 2
+          }
+        ],
+        "message": "Not multiple of \"0.1\"",
+        "path": [
+          "fail"
+        ]
+      },
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 3
+          }
+        ],
+        "message": "Not multiple of \"0.1\"",
+        "path": [
+          "fail2"
+        ]
+      }
+    ]
+  }
 }
