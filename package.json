@@ -2,11 +2,12 @@
   "description": "GraphQL Constraints",
   "scripts": {
     "tsc": "tsc",
+    "build:lib": "rimraf lib/ && npm run tsc",
     "build:bundle": "webpack -p --config webpack.config.js",
     "build": "rimraf lib/ && npm run tsc && npm run build:bundle",
     "start": "ts-node ./src/index.ts",
     "mocha": "mocha -r ts-node/register tests/runner.ts",
-    "test": "npm run mocha -- --command \"ts-node ./tests/test-server.ts\""
+    "test": "npm run build:lib && npm run mocha -- --command \"node ./lib/tests/test-server.js\""
   },
   "dependencies": {
     "graphql": "github:apis-guru/graphql-js#astNode-fork-dist",
