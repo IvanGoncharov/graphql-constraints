@@ -2,20 +2,21 @@ import {
   defaultFieldResolver,
   GraphQLSchema,
   getNamedType,
+  GraphQLNamedType,
   GraphQLScalarType,
   GraphQLObjectType,
+  GraphQLInputObjectType,
+  GraphQLArgument,
   DirectiveNode,
-  ScalarTypeDefinitionNode,
-  InputValueDefinitionNode,
 } from 'graphql';
 
 import { getArgumentValues } from 'graphql/execution/values.js';
 
 import { each, keyBy, mapValues, mergeWith } from 'lodash';
 
-import { constraintsIDL,
+import {
+  constraintsIDL,
   getDirectivesFromAST,
-  Dictionary,
   typeOf,
 } from './utils';
 
@@ -60,10 +61,15 @@ function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
   if (astNode === null) {
     return {};
   }
+
   let result = {};
   astNode.directives.forEach(directiveNode => {
     const name = directiveNode.name.value;
     const directive = constraintsDirectives[name];
+    if (directive === undefined) {
+      return;
+    }
+
     const constraints = getArgumentValues(directive, directiveNode);
     result['@' + name] = Object.keys(constraints).length ? [constraints] : [];
   });
@@ -71,16 +77,20 @@ function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
 }
 
 function validate(value: any, directives:ConstraintsMap): void {
-  if (Object.keys(directives).length === 0) {
+  if (Object.keys(directives).length === 0 || value == null) {
     return;
   }
 
   const valueType = typeOf(value);
-  if (valueType === 'null') {
-    return;
-  } else if (valueType === 'array') {
+  if (valueType === 'array') {
     return value.forEach(item => validate(item, directives));
   } else if(valueType === 'object') {
+    each(directives, (propertyDirectives, key) => {
+      if (key[0] === '@') {
+        return;
+      }
+      validate(value[key], propertyDirectives);
+    })
     // TODO
   } else {
     const expectedDirective = `@${valueType}Value`;
@@ -162,15 +172,28 @@ function booleanValue(value:boolean, constraints: BooleanConstraints) {
   }
 }
 
-function extractScalarConstraints(schema: GraphQLSchema): Dictionary<ConstraintsMap> {
-  let res = {};
-  Object.values(schema.getTypeMap()).forEach(type => {
-    if (type instanceof GraphQLScalarType) {
-      const astNode = (type as any).astNode as ScalarTypeDefinitionNode;
-      res[type.name] = extractConstraints(astNode);
-    }
-  });
-  return res;
+function isStandardType(type) {
+  return type.name.startsWith('__');
+}
+
+function extractTypeConstraints(type: GraphQLNamedType): ConstraintsMap {
+  if (isStandardType(type)) {
+    return {};
+  }
+
+  if (type instanceof GraphQLScalarType) {
+    return extractConstraints((type as any).astNode);
+  }
+  if (type instanceof GraphQLInputObjectType) {
+    debugger;
+    return mapValues(
+      type.getFields(),
+      field => mergeConstraints(
+        extractConstraints((field as any).astNode),
+        extractTypeConstraints(getNamedType(field.type))
+      )
+    );
+  }
 }
 
 function mergeConstraints(obj:ConstraintsMap, source:ConstraintsMap) {
@@ -180,36 +203,35 @@ function mergeConstraints(obj:ConstraintsMap, source:ConstraintsMap) {
 }
 
 export function constraintsMiddleware(schema: GraphQLSchema):void {
-  let scalarConstraints = extractScalarConstraints(schema);
+  let typeConstraints = mapValues(schema.getTypeMap(), extractTypeConstraints);
 
   Object.values(schema.getTypeMap()).forEach(type => {
-    if (type.name.startsWith('__')) {
+    if (isStandardType(type) || !(type instanceof GraphQLObjectType)) {
       return;
     }
 
-    if (type instanceof GraphQLScalarType) {
-      return;
-    }
+    each(type.getFields(), field => {
+      const argsConstraints = getArgsConstraints(field.args);
 
-    if (type instanceof GraphQLObjectType) {
-      each(type.getFields(), field => {
-        const argsConstraints = mapValues(keyBy(field.args, 'name'), arg => {
-          const astNode = (arg as any).astNode as InputValueDefinitionNode;
-          return mergeConstraints(
-            extractConstraints(astNode),
-            scalarConstraints[getNamedType(arg.type).name]
-          );
+      const orginalResolve = field.resolve || defaultFieldResolver;
+      field.resolve = (source, args, context, info) => {
+        each(args, (value, name) => {
+          validate(value, argsConstraints[name]);
         });
-
-        const orginalResolve = field.resolve || defaultFieldResolver;
-        field.resolve = (source, args, context, info) => {
-          each(args, (value, name) => {
-            validate(value, argsConstraints[name]);
-          });
-          let res = orginalResolve(source, args, context, info);
-          return res;
-        };
-      });
-    }
+        let res = orginalResolve(source, args, context, info);
+        return res;
+      };
+    });
   });
+
+  function getArgsConstraints(args: Array<GraphQLArgument>)
+    : ConstraintsMap {
+    return mapValues(keyBy(args, 'name'), arg => {
+      const astNode = (arg as any).astNode;
+      return mergeConstraints(
+        extractConstraints(astNode),
+        typeConstraints[getNamedType(arg.type).name]
+      );
+    });
+  }
 }

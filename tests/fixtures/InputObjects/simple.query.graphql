@@ -1,0 +1,8 @@
+{
+  pass: field(inputObjArg: {
+    equalsField: "Hello"
+  })
+  fail: field(inputObjArg: {
+    equalsField: "Oops!"
+  })
+}

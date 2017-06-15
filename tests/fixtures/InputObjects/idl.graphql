@@ -1,0 +1,9 @@
+input SomeInputObj {
+  equalsField: String @stringValue(equals: "Hello")
+}
+
+type Query {
+  field(
+    inputObjArg: SomeInputObj
+  ): Int
+}
