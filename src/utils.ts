@@ -32,6 +32,20 @@ directive @stringValue(
   equals: String
   regex: String
 ) on FIELD | ARGUMENT_DEFINITION | SCALAR
+
+input _ListConstraints {
+  maxItems: Int
+  minItems: Int
+  uniqueItems: Boolean
+  innerList: _ListConstraints
+}
+
+directive @list(
+  maxItems: Int
+  minItems: Int
+  uniqueItems: Boolean
+  innerList: _ListConstraints
+) on FIELD | ARGUMENT_DEFINITION
 `, 'constraintsIDL');
 
 export function appendDirectivesIDL(idl:Source|string):string {

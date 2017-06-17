@@ -23,7 +23,7 @@ function test(name, idl, query, options = {}) {
     idl, query, options
   };
   const res = JSON.parse(
-    execSync(argv.command, {input: JSON.stringify(testInput)}).toString()
+    execSync(argv.command, {input: JSON.stringify(testInput), stdio:['pipe', 'pipe', 2]}).toString()
   );
   expect(res).to.matchSnapshotJSON(name);
 }

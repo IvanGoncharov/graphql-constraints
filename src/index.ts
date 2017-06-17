@@ -45,14 +45,9 @@ interface NumberConstraints {
   multipleOf?: number;
 }
 
-interface BooleanConstraints {
-  equals?: boolean;
-}
-
 interface ConstraintsMap {
   '@stringValue'?: StringConstraints[];
   '@numberValue'?: NumberConstraints[];
-  '@booleanValue'?: BooleanConstraints[];
 }
 
 const constraintsDirectives = getDirectivesFromAST(constraintsIDL);
@@ -151,8 +146,6 @@ const errorsMessages = {
   NumberValueOneOf: (oneOf) => `Not one of "${oneOf.join(', ')}"`,
   NumberValueEquals: (equals) => `Not equal to "${equals}"`,
   NumberValueMultipleOf: (multipleOf) => `Not multiple of "${multipleOf}"`,
-
-  BooleanValueEquals: () => 'not equals',
 };
 
 function isStandardType(type) {
