@@ -1,0 +1,5 @@
+type Query {
+  field (
+    nonEmptyListOfIntArg: [Int]! @list(minItems: 1)
+  ): Int
+}

@@ -1,0 +1,4 @@
+{
+  pass: field(nonEmptyListOfIntArg: [ 1 ])
+  fail: field(nonEmptyListOfIntArg: [ ])
+}

@@ -12,7 +12,7 @@ import {
 
 import { getArgumentValues } from 'graphql/execution/values.js';
 
-import { each, keyBy, mapValues, mergeWith, upperFirst } from 'lodash';
+import { each, keyBy, mapValues, omit, mergeWith, upperFirst } from 'lodash';
 
 import {
   constraintsIDL,
@@ -77,16 +77,16 @@ function validate(value: any, directives:ConstraintsMap): void {
   }
 
   const valueType = typeOf(value);
-  if (valueType === 'array') {
-    return value.forEach(item => validate(item, directives));
-  } else if(valueType === 'object') {
+  if(valueType === 'object') {
     each(directives, (propertyDirectives, key) => {
-      if (key[0] === '@') {
-        return;
+      if (key[0] !== '@') {
+        validate(value[key], propertyDirectives);
       }
-      validate(value[key], propertyDirectives);
     })
-    // TODO
+  } else if (valueType === 'array') {
+    validateValue('@list', value);
+    const itemConstraints = omit(directives, '@list');
+    value.forEach(item => validate(item, itemConstraints));
   } else {
     const expectedDirective = `@${valueType}Value`;
     const directiveNames = Object.keys(directives);
@@ -98,18 +98,24 @@ function validate(value: any, directives:ConstraintsMap): void {
       throw Error(`Got ${valueType} expected ${allowedTypes.join(',')}`)
     }
 
-    for (let directive of directives[expectedDirective]) {
-      each(directive, (constraint, name) => {
-        if (constraintsMap[name](constraint, value)) {
+    validateValue(expectedDirective, value);
+  }
+
+  function validateValue(directiveName, value) {
+    each(directives[directiveName], constrainSet => {
+      each(constrainSet, (constraint, name) => {
+        const validateFn = constraintsMap[name];
+        if (validateFn(constraint, value)) {
           return;
         }
-        const code = upperFirst(valueType) + 'Value' + upperFirst(name);
+        const code = upperFirst(directiveName.slice(1)) + upperFirst(name);
         const message = errorsMessages[code](constraint,value);
         throw Error(message);
       });
-    }
+    });
   }
 }
+
 
 const constraintsMap = {
   oneOf: (constraint, value) => constraint.includes(value),
@@ -127,6 +133,10 @@ const constraintsMap = {
   exclusiveMin: (constraint, num) => num > constraint,
   exclusiveMax: (constraint, num) => num < constraint,
   multipleOf: (constraint, num) => num / constraint % 1 === 0,
+
+  minItems: (constraint, array) => array.length >= constraint,
+  maxItems: (constraint, array) => array.length <= constraint,
+  uniqueItems: (constraint, array) => constraint && isUniqueItems(array),
 };
 
 const errorsMessages = {
@@ -146,7 +156,17 @@ const errorsMessages = {
   NumberValueOneOf: (oneOf) => `Not one of "${oneOf.join(', ')}"`,
   NumberValueEquals: (equals) => `Not equal to "${equals}"`,
   NumberValueMultipleOf: (multipleOf) => `Not multiple of "${multipleOf}"`,
+
+  ListMinItems: () => 'Less than minItems',
+  ListMaxItems: () => 'Greater that maxItems',
+  ListUniqueItems: () => 'Non unique array items',
 };
+
+function isUniqueItems(array) {
+  //TODO: put indexes of duplicated items in error msg
+  //FIXME: handle object
+  return !array.some((item, index) => array.indexOf(item) !== index);
+}
 
 function isStandardType(type) {
   return type.name.startsWith('__');

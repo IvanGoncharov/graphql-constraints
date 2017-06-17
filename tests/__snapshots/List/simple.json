@@ -1,0 +1,22 @@
+{
+  "response": {
+    "data": {
+      "fail": null,
+      "pass": 1
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 3,
+            "line": 3
+          }
+        ],
+        "message": "Less than minItems",
+        "path": [
+          "fail"
+        ]
+      }
+    ]
+  }
+}
