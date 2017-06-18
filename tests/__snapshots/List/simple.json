@@ -9,7 +9,7 @@
         "locations": [
           {
             "column": 3,
-            "line": 3
+            "line": 4
           }
         ],
         "message": "Less than minItems",

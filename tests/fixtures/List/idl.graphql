@@ -1,5 +1,11 @@
 type Query {
   field (
-    nonEmptyListOfIntArg: [Int]! @list(minItems: 1)
+    simpleNonEmptyList: [Int] @list(minItems: 1)
+    listOfLists: [[Int]!] @list(
+      minItems: 1
+      innerList: {
+        minItems: 1
+      }
+    )
   ): Int
 }

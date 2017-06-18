@@ -1,4 +1,5 @@
 {
-  pass: field(nonEmptyListOfIntArg: [ 1 ])
-  fail: field(nonEmptyListOfIntArg: [ ])
+  # simpleNonEmptyList: [Int] @list(minItems: 1)
+  pass: field(simpleNonEmptyList: [ 1 ])
+  fail: field(simpleNonEmptyList: [ ])
 }

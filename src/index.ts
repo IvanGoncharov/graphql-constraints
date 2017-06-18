@@ -84,8 +84,20 @@ function validate(value: any, directives:ConstraintsMap): void {
       }
     })
   } else if (valueType === 'array') {
-    validateValue('@list', value);
     const itemConstraints = omit(directives, '@list');
+    const listCostraints = directives['@list'];
+
+    if (listCostraints) {
+      validateValue('@list', value);
+
+      const innerList = listCostraints
+        .map(x => x.innerList)
+        .filter(x => x != null);
+      if (innerList.length !== 0) {
+        itemConstraints['@list'] = innerList;
+      }
+    }
+
     value.forEach(item => validate(item, itemConstraints));
   } else {
     const expectedDirective = `@${valueType}Value`;
@@ -102,10 +114,11 @@ function validate(value: any, directives:ConstraintsMap): void {
   }
 
   function validateValue(directiveName, value) {
-    each(directives[directiveName], constrainSet => {
+    const directiveConstraints = directives[directiveName];
+    each(directiveConstraints, constrainSet => {
       each(constrainSet, (constraint, name) => {
         const validateFn = constraintsMap[name];
-        if (validateFn(constraint, value)) {
+        if (!validateFn || validateFn(constraint, value)) {
           return;
         }
         const code = upperFirst(directiveName.slice(1)) + upperFirst(name);

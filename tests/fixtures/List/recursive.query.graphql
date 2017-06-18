@@ -1,0 +1,11 @@
+{
+  # listOfLists: [[Int]!] @list(
+  #   minItems: 1
+  #   innerList: {
+  #     minItems: 1
+  #   }
+  # )
+  pass: field(listOfLists: [ [ 1 ] ])
+  fail1: field(listOfLists: [ ])
+  fail2: field(listOfLists: [ [ ] ])
+}
