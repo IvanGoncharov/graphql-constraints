@@ -1,0 +1,3 @@
+type Query {
+  field(argument: [[ID!]] @list(minLength: 0, innerList: {minLength: 0})): String
+}

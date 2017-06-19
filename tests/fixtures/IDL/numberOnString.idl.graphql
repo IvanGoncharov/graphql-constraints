@@ -1,0 +1,3 @@
+type Query {
+  field(argument: String @numberValue(min: 10)): String
+}
