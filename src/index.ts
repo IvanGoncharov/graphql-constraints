@@ -2,12 +2,13 @@ import {
   defaultFieldResolver,
   GraphQLSchema,
   getNamedType,
+  GraphQLType,
   GraphQLNamedType,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInputObjectType,
   GraphQLArgument,
-  DirectiveNode,
+  GraphQLDirective,
 } from 'graphql';
 
 import { getArgumentValues } from 'graphql/execution/values.js';
@@ -15,44 +16,60 @@ import { getArgumentValues } from 'graphql/execution/values.js';
 import { each, keyBy, mapValues, omit, mergeWith, upperFirst } from 'lodash';
 
 import {
-  constraintsIDL,
-  getDirectivesFromAST,
   typeOf,
+  isStandardType,
+  isUniqueItems,
 } from './utils';
 
-interface ASTNodeWithDirectives {
-  directives?: DirectiveNode[];
+import {
+  ASTNodeWithDirectives,
+  Constraints,
+  ConstraintsMap,
+} from './types';
+
+import {
+  isCustomOrOneOfScalars,
+  validateConstraints,
+  validateListDepth,
+} from './validate-constraints';
+
+import {
+  constraintsDirectives
+} from './directives';
+
+function getDirectiveConstraints(
+  directive: GraphQLDirective,
+  node: ASTNodeWithDirectives,
+  type?: GraphQLType
+): Constraints {
+  const constraints = getArgumentValues(directive, node);
+
+  if (!type) {
+    return constraints;
+  }
+
+  let namedType = getNamedType(type);
+
+  if (directive.name === 'numberValue') {
+    if (!isCustomOrOneOfScalars(namedType, ['Int', 'Float'])) {
+      throw new Error(`Cant apply numberValue to type ${namedType.name}`);
+    }
+  } else if (directive.name === 'stringValue') {
+    if (!isCustomOrOneOfScalars(namedType, ['String', 'ID'])) {
+      throw new Error(`Cant apply numberValue to type ${namedType.name}`);
+    }
+  } else if (directive.name === 'list') {
+    validateListDepth(type, constraints);
+  }
+
+  validateConstraints(constraints);
+  return constraints;
 }
 
-interface StringConstraints {
-  minLength?: number;
-  maxLength?: number;
-  startsWith?: string;
-  endsWith?: string;
-  includes?: string;
-  oneOf?: string[];
-  equals?: string;
-  regex: string;
-}
-
-interface NumberConstraints {
-  min?: number;
-  max?: number;
-  exclusiveMax?: number;
-  exclusiveMin?: number;
-  oneOf?: number[];
-  equals?: number;
-  multipleOf?: number;
-}
-
-interface ConstraintsMap {
-  '@stringValue'?: StringConstraints[];
-  '@numberValue'?: NumberConstraints[];
-}
-
-const constraintsDirectives = getDirectivesFromAST(constraintsIDL);
-
-function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
+function extractConstraints(
+  def: { astNode: ASTNodeWithDirectives, type?: GraphQLType }
+): ConstraintsMap {
+  const astNode = (def as any).astNode;
   if (astNode === null) {
     return {};
   }
@@ -65,7 +82,7 @@ function extractConstraints(astNode: ASTNodeWithDirectives):ConstraintsMap {
       return;
     }
 
-    const constraints = getArgumentValues(directive, directiveNode);
+    const constraints = getDirectiveConstraints(directive, directiveNode, def.type);
     result['@' + name] = Object.keys(constraints).length ? [constraints] : [];
   });
   return result;
@@ -129,7 +146,6 @@ function validate(value: any, directives:ConstraintsMap): void {
   }
 }
 
-
 const constraintsMap = {
   oneOf: (constraint, value) => constraint.includes(value),
   equals: (constraints, value) => value === constraints,
@@ -175,30 +191,20 @@ const errorsMessages = {
   ListUniqueItems: () => 'Non unique array items',
 };
 
-function isUniqueItems(array) {
-  //TODO: put indexes of duplicated items in error msg
-  //FIXME: handle object
-  return !array.some((item, index) => array.indexOf(item) !== index);
-}
-
-function isStandardType(type) {
-  return type.name.startsWith('__');
-}
-
 function extractTypeConstraints(type: GraphQLNamedType): ConstraintsMap {
   if (isStandardType(type)) {
     return {};
   }
 
   if (type instanceof GraphQLScalarType) {
-    return extractConstraints((type as any).astNode);
+    return extractConstraints(type as any);
   }
+
   if (type instanceof GraphQLInputObjectType) {
-    debugger;
     return mapValues(
       type.getFields(),
       field => mergeConstraints(
-        extractConstraints((field as any).astNode),
+        extractConstraints(field as any),
         extractTypeConstraints(getNamedType(field.type))
       )
     );
@@ -236,9 +242,8 @@ export function constraintsMiddleware(schema: GraphQLSchema):void {
   function getArgsConstraints(args: Array<GraphQLArgument>)
     : ConstraintsMap {
     return mapValues(keyBy(args, 'name'), arg => {
-      const astNode = (arg as any).astNode;
       return mergeConstraints(
-        extractConstraints(astNode),
+        extractConstraints(arg as any),
         typeConstraints[getNamedType(arg.type).name]
       );
     });

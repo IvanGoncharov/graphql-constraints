@@ -2,55 +2,18 @@ import {
   Source,
   parse,
   concatAST,
-  print,
   buildASTSchema,
   GraphQLDirective,
+  GraphQLScalarType,
+  GraphQLType,
+  GraphQLList,
+  GraphQLNonNull,
+  isNamedType,
 } from 'graphql';
 
 import { keyBy } from 'lodash';
 
-export type Dictionary<T> = {[key: string]: T};
-
-export const constraintsIDL = new Source(`
-directive @numberValue(
-  min: Float
-  max: Float
-  exclusiveMax: Float
-  exclusiveMin: Float
-  oneOf: [Float]
-  equals: Float
-  multipleOf: Float
-) on FIELD | ARGUMENT_DEFINITION | SCALAR
-
-directive @stringValue(
-  minLength: Int
-  maxLength: Int
-  startsWith: String
-  endsWith: String
-  includes: String
-  oneOf: [String]
-  equals: String
-  regex: String
-) on FIELD | ARGUMENT_DEFINITION | SCALAR
-
-input _ListConstraints {
-  maxItems: Int
-  minItems: Int
-  uniqueItems: Boolean
-  innerList: _ListConstraints
-}
-
-directive @list(
-  maxItems: Int
-  minItems: Int
-  uniqueItems: Boolean
-  innerList: _ListConstraints
-) on FIELD | ARGUMENT_DEFINITION
-`, 'constraintsIDL');
-
-export function appendDirectivesIDL(idl:Source|string):string {
-  return print(concatAST([parse(idl), parse(constraintsIDL)]));
-}
+import { Dictionary } from './types';
 
 export function getDirectivesFromAST(idl:Source):Dictionary<GraphQLDirective> {
   const dummyIDL = `
@@ -78,4 +41,30 @@ export function typeOf(value: any): string {
   if (!type && (typeof value === 'object'))
     type = 'object';
   return type.toLowerCase();
+}
+
+export function isStandardType(type) {
+  return type.name.startsWith('__');
+}
+
+const builtInScalarNames = ['String', 'Int', 'Float', 'Boolean', 'GraphQLID'];
+export function isBuiltInScalar(type: GraphQLScalarType): boolean {
+ return builtInScalarNames.includes(type.name);
+}
+
+export function getListDepth(type: GraphQLType):number {
+ let res = 0;
+ while(!isNamedType(type)) {
+   if (type instanceof GraphQLList) {
+     res++;
+   }
+   type = (type as (GraphQLList<any> | GraphQLNonNull<any>)).ofType;
+ }
+ return res;
+}
+
+export function isUniqueItems(array) {
+ // TODO: put indexes of duplicated items in error msg
+ // FIXME: handle object
+ return !array.some((item, index) => array.indexOf(item) !== index);
 }
