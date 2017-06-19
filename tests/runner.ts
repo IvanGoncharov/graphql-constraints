@@ -16,9 +16,9 @@ chaiUse(snapshots.SnapshotMatchers({
 }));
 
 const fixturesDir = path.join(__dirname, 'fixtures');
-const testIDLs = glob.sync('**/idl.graphql');
+const testIDLs = glob.sync('**/?(*.)idl.graphql');
 
-function test(name, idl, query, options = {}) {
+function test(name, idl, query = '', options = {}) {
   const testInput = {
     idl, query, options
   };
@@ -31,13 +31,20 @@ function test(name, idl, query, options = {}) {
 
 testIDLs.forEach(idlFile => {
   const dir = path.dirname(idlFile);
-  const groupName = path.relative(fixturesDir, dir);
+  let groupName = path.relative(fixturesDir, dir);
   describe(groupName, () => {
     const idl = fs.readFileSync(idlFile).toString();
     const rootValue = fakeRootValue(idl);
 
     const queriesGlob = path.join(dir, '*.query.graphql');
     const queries = glob.sync(queriesGlob);
+    if (!queries.length) {
+      const testName = path.join(groupName, path.basename(idlFile, '.idl.graphql'));
+      const snapshotPath = path.join(testName + '.json');
+      it(testName, () => {
+        test(snapshotPath, idl);
+      });
+    }
     for (let queryFileName of queries) {
       let snapshotPath = path.join(groupName, path.basename(queryFileName, '.query.graphql')) + '.json';
       it(queryFileName, () => {

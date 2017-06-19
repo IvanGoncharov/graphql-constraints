@@ -38,17 +38,26 @@ function initSchema(schema: GraphQLSchema) {
 }
 
 async function test() {
-  const config:TestConfig = JSON.parse(await getStream(stdin));
+  try {
+    const config:TestConfig = JSON.parse(await getStream(stdin));
 
-  const schema = buildSchema(config.idl);
+    const schema = buildSchema(config.idl);
 
-  initSchema(schema);
+    initSchema(schema);
 
-  constraintsMiddleware(schema);
+    constraintsMiddleware(schema);
 
-  graphql(schema, config.query, config.options.rootValue || {}).then(result => {
-    stdout.write(JSON.stringify({ response: result}));
-  });
+    // for tests which test IDL only
+    if (!config.query) {
+      stdout.write('{}');
+      return;
+    }
+    await graphql(schema, config.query, config.options.rootValue || {}).then(result => {
+      stdout.write(JSON.stringify({ response: result}));
+    });
+  } catch(e) {
+    stdout.write(JSON.stringify({ error: e.message}));
+  }
 }
 
 test();
